@@ -112,17 +112,23 @@ def pbi_teams_url(url="", print_or_return="print", copy_to_clipboard=True):
 
     Parses the new URLs coming from the 'Chat in Teams' feature in PowerBI
     and shortens them so they can be used in Office files and SharepPoint Lists
+
+    url:            the url in question if None or empty string, will use what's in the clipboard
+    print_or_return:if "print", will only print the resuting
     """
     import urllib.parse as up
     import json
-    import re
     import pyperclip
+
+    valid_starting_str = "https://teams.microsoft.com/l/entity/"
 
     if not url:
         url = pyperclip.paste()
         print("Copied from clipboard!")
-        if not url.startswith("https://teams.microsoft.com/l/entity/"):
-            print(f"URL doesn't look like a bookmark sharing (starts with {url[0:37]}")
+        if not url.startswith(valid_starting_str):
+            print(
+                f"URL doesn't look like a bookmark sharing (starts with {url[0:len(valid_starting_str)]}"
+            )
 
     # extract the parameter 'context' from the url and url-decode it
     parsed = up.urlparse(url)
@@ -132,24 +138,8 @@ def pbi_teams_url(url="", print_or_return="print", copy_to_clipboard=True):
     d = json.loads(j)
     real_url = d["subEntityId"]
 
-    # use regular expressions to get the different pieces of the url
-    result = re.findall(r"(?<=\/apps\/)(.*)(?=\/reports)", real_url)
-    app = result[0]
-    result = re.findall(r"(?<=\/reports\/)(.*)(?=\/Re)", real_url)
-    report = result[0]
-    result = re.findall(r"(?<=bookmarkGuid=)(.*)", real_url)
-    bookmark = result[0]
-
     # build the url
-    new_url = (
-        "https://app.powerbi.com/Redirect?action=openReport"
-        + "&AppID="
-        + app
-        + "&reportObjectId="
-        + report
-        + "&bookmarkGuid="
-        + bookmark
-    )
+    new_url = up.unquote(d["subEntityId"])
 
     if copy_to_clipboard:
         pyperclip.copy(new_url)
