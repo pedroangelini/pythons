@@ -1,9 +1,9 @@
-def generate_replace_error_list(change_type_str : str, find_type: str, replace_by : str):
+def generate_replace_error_list(change_type_str: str, find_type: str, replace_by: str):
     """
-    Given a list of Power Query {field, type}, finds the ones that have the type /find_type/ and 
+    Given a list of Power Query {field, type}, finds the ones that have the type /find_type/ and
     outputs a list of {field, /replace_by/}
 
-    examples: 
+    examples:
         input:
         change_type_str: '{"Position ID", type text}, {"Organization", type any}, {"Sub Team", type text}, {"Cost", type number}'
         find_type: "type number"
@@ -18,18 +18,17 @@ def generate_replace_error_list(change_type_str : str, find_type: str, replace_b
     """
     s1 = change_type_str[2:]
     s1 = s1[:-2]
-    
-    pairstrs = s1.split('}, {')
+
+    pairstrs = s1.split("}, {")
     retstr = "{"
     for p in pairstrs:
         kv = p.split(", ")
         if kv[1] == find_type:
             retstr += "{" + kv[0] + ", " + replace_by + "}, "
 
-    retstr = retstr.removesuffix(', ')
+    retstr = retstr.removesuffix(", ")
     retstr += "}"
     return retstr
-
 
 
 if __name__ == "__main__":
