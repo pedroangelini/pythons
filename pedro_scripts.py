@@ -42,14 +42,25 @@ def calcdeltas(last, curr, ret=None):
     the function will zip the two arguments, matching 1st item of
     last to 1st item
 
-    last: iterable with starting points
-    curr: iterable with ending points
+    last: iterable with starting points (accepts a single number too)
+    curr: iterable with ending points (accepts a single number too)
     ret :  optional string that determines the type of return
         None or float: returns the proportion (current - last)/last
         difference: current - last
         percent: the signed percentage change (eg -35%)
         full: dictionary with the difference, float, and percent
     """
+
+    # if we received a number instead of an iterable, convert to list
+    try:
+        iter(last)
+    except TypeError:
+        last = [last]
+    try:
+        iter(curr)
+    except TypeError:
+        curr = [curr]
+
     ret_difference = [(c - l) for l, c in zip(last, curr)]
     ret_float = [dif / l for dif, l in zip(ret_difference, last)]
     ret_percent = [f"{f:+.0%}" for f in ret_float]
