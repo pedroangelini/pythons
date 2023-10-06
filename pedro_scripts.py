@@ -183,7 +183,6 @@ def make_json(csvFilePath, jsonFilePath, key_column):
         # Convert each row into a dictionary
         # and add it to data
         for rows in csvReader:
-
             # Assuming a column named 'No' to
             # be the primary key
             key = rows[key_column]
@@ -205,6 +204,20 @@ def flatten(list_of_lists):
         list: a single list with all the items of the list_of_lists
     """
     return [item for sublist in list_of_lists for item in sublist]
+
+
+def get_ip_addresses() -> list[str | None]:
+    """gets external facing IP addresses using myip.dnsomatic.com
+    from https://stackoverflow.com/a/65564857/14884539
+
+    Returns:
+        list[str | None]: list of IP addresses
+    """
+    import requests
+
+    f = requests.request("GET", "http://myip.dnsomatic.com")
+    ip = f.text
+    return [i.trim() for i in ip.split(",")]
 
 
 ##################################################################################################
