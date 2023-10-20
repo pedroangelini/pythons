@@ -206,18 +206,33 @@ def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def get_ip_addresses() -> list[str | None]:
+def get_ip_addresses(print: bool = False) -> list[str | None]:
     """gets external facing IP addresses using myip.dnsomatic.com
     from https://stackoverflow.com/a/65564857/14884539
+
+    Args:
+        print (bool, optional): If the function should print the values before
+                                returning. Defaults to False.
 
     Returns:
         list[str | None]: list of IP addresses
     """
     import requests
 
-    f = requests.request("GET", "http://myip.dnsomatic.com")
+    f = requests.request(
+        "GET",
+        "http://myip.dnsomatic.com",
+    )
+    f.raise_for_status()
+
     ip = f.text
-    return [i.trim() for i in ip.split(",")]
+    ret = [i.strip() for i in ip.split(",")]
+
+    if print:
+        for i in ret:
+            print(i)
+
+    return ret
 
 
 ##################################################################################################
