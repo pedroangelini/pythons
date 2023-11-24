@@ -206,7 +206,7 @@ def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def get_ip_addresses(print: bool = False) -> list[str | None]:
+def get_ip_addresses(print_to_screen: bool = False) -> list[str | None]:
     """gets external facing IP addresses using myip.dnsomatic.com
     from https://stackoverflow.com/a/65564857/14884539
 
@@ -218,17 +218,33 @@ def get_ip_addresses(print: bool = False) -> list[str | None]:
         list[str | None]: list of IP addresses
     """
     import requests
+    import time
 
-    f = requests.request(
-        "GET",
-        "http://myip.dnsomatic.com",
-    )
-    f.raise_for_status()
+    retries = 5
+
+    for _ in range(retries):
+        try:
+            f = requests.request(
+                "GET",
+                "http://myip.dnsomatic.com",
+            )
+            f.raise_for_status()
+        except requests.exceptions.HTTPError:
+            if f.status_code == 429:
+                print(
+                    "got error 429 'Client Error: Too Many Requests' retrying in 1 sec..."
+                )
+                time.sleep(1)
+                continue
+            else:
+                raise
+        except:
+            raise
 
     ip = f.text
     ret = [i.strip() for i in ip.split(",")]
 
-    if print:
+    if print_to_screen:
         for i in ret:
             print(i)
 
