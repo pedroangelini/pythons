@@ -241,6 +241,3 @@ _dirResults = dir()
 _dirResults.sort()
 if __name__ == "__main__":
     pass
-else:
-    print("Helper Scripts loaded!")
-    listPedroScripts()
