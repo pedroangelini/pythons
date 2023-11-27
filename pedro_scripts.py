@@ -206,21 +206,42 @@ def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def get_ip_addresses(print_to_screen: bool = False) -> list[str | None]:
+def exponential_waiter(base_time_sec: int = 1, exponent: int = 2) -> None:
+    """Sleeps for an exponential number of seconds every time next() is called
+
+    Args:
+        base_time_sec (int, optional): number of seconds to wait the first time. Defaults to 1.
+        exponent (int, optional): exponent of . Defaults to 2.
+    """
+    import time
+
+    wait_time = base_time_sec
+    while True:
+        print(f"waiting for {wait_time} second{'s' if wait_time != 1 else ''}")
+        time.sleep(wait_time)
+        yield
+        wait_time = wait_time * exponent
+
+
+def get_ip_addresses(script_mode: bool = False) -> list[int | str | None]:
     """gets external facing IP addresses using myip.dnsomatic.com
     from https://stackoverflow.com/a/65564857/14884539
 
     Args:
-        print (bool, optional): If the function should print the values before
-                                returning. Defaults to False.
+        script_mode (bool, optional): If the function should print the values before
+                                returning - will return 1 if successful instead of
+                                returning the ips.
+                                Defaults to False.
 
     Returns:
-        list[str | None]: list of IP addresses
+        list[int | str | None]:
+            if script_mode is False, returns list of IP addresses, or None if not successful
+            else, if in script_mode, prints IPs to screen and returns 0 if successful, or 1 if failed
     """
     import requests
-    import time
 
     retries = 5
+    waiter = exponential_waiter()
 
     for _ in range(retries):
         try:
@@ -229,25 +250,31 @@ def get_ip_addresses(print_to_screen: bool = False) -> list[str | None]:
                 "http://myip.dnsomatic.com",
             )
             f.raise_for_status()
+            break
+
         except requests.exceptions.HTTPError:
             if f.status_code == 429:
-                print(
-                    "got error 429 'Client Error: Too Many Requests' retrying in 1 sec..."
-                )
-                time.sleep(1)
+                print("got error 429 'Client Error: Too Many Requests' retrying...")
+                next(waiter)
                 continue
             else:
                 raise
         except:
             raise
+    else:
+        print(f"Tried {retries} times, but could not get IPs :(")
+        if script_mode:
+            return 1
+        else:
+            return None
 
     ip = f.text
     ret = [i.strip() for i in ip.split(",")]
 
-    if print_to_screen:
+    if script_mode:
         for i in ret:
             print(i)
-
+        return 0
     return ret
 
 
