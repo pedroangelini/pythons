@@ -1,25 +1,16 @@
-from itertools import pairwise
-import re
-
-FILE_NAME = "In Times Like These_ Mega Boxed Set [B09Z74TD4Z].cue"
-FRAMERATE = 75.0
-SPLITS = (27, 61)
+import argparse
+from dataclasses import dataclass
+from enum import Enum, StrEnum, auto
+import sys
 
 
-with open(FILE_NAME, "r") as fp:
-    cue_content = fp.read()
-
-first_line = cue_content[0 : cue_content.find("\n")]
-tracks_content = cue_content[cue_content.find("\n") :]
+class States:
+    in_book = auto()
+    in_gap = auto()
 
 
-def time_str_to_s(timestr: str) -> float:
-    minutes, sec, frames = timestr.split(":")
-    minutes = int(minutes)
-    sec = int(sec)
-    frames = int(frames)
-
-    return minutes * 60 + sec + frames / FRAMERATE
+state = States.in_book
+gap_seconds = 0.0
 
 
 def time_float_to_str(timefloat: float) -> str:
@@ -62,20 +53,41 @@ class Track:
         return self
 
 
-blocklist = re.findall("((?:[^\n]+\n?){1,3})", tracks_content)
-
-tracks: list[Track] = []
-for block in blocklist:
-    tracks.append(Track.from_str(block))
-
-with open("track_list.txt", "w") as fp:
-    fp.write("\n".join([str(t) for t in tracks]))
+class EventType(StrEnum):
+    T = "T"
+    E = "E"
+    S = "S"
 
 
-splits = [0, *SPLITS, max([t.num for t in tracks])]
-splits = list(pairwise(splits))
-print("Book boundaries:", splits)
+@dataclass
+class Event:
+    ts: float
+    event_type: EventType
+    title: str
 
-time_boundaries = [tracks[s - 1].time_s for s in SPLITS]
-print(time_boundaries)
-# print("\n".join([str(t.offset_time_s(-10)) for t in tracks[0:2]]))
+
+def parse_events_file(input_file: str) -> list[Event]:
+    el = []
+    try:
+        with open(input_file, "r") as fp:
+            content = fp.read().splitlines()
+        for line in content:
+            typ, title, sec = line.split(" - ")
+            event = Event(ts=float(sec), event_type=EventType(typ), title=title.strip())
+            el.append(event)
+    except Exception as e:
+        print(f"Could not parse file: {str(e)}", file=sys.stderr)
+
+    return el
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Creates a CUE file based on a list of tracks, starts and ends"
+    )
+    parser.add_argument("-i", "--input", help="input file name", required=True)
+    parser.add_argument("-o", "--output", help="output file name", required=True)
+    args = parser.parse_args()
+
+    events = parse_events_file(args.input)
+    print(events)
