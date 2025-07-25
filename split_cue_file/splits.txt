@@ -1,0 +1,11 @@
+start: 0
+end of common intro: 14
+start of book 1: 14
+start chapter end of book 1: 49571.942404
+end of book 1: 49564.26
+start of book2: 49564.26
+end of book 2: 120447.44
+start of book 3 The Day After Never: 120447.44
+end of book 3: 189112.5
+start of book 4 The Warp Clock:189112.5
+outro: 220036.09

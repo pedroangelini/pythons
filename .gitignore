@@ -4,5 +4,5 @@ __pycache__/
 # cue splitter
 *.cue
 *.m4b
-split_cue_file/track_list.txt
+*.ts
 

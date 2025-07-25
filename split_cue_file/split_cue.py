@@ -76,6 +76,6 @@ splits = [0, *SPLITS, max([t.num for t in tracks])]
 splits = list(pairwise(splits))
 print("Book boundaries:", splits)
 
-time_boundaries = [time_float_to_str(tracks[s - 1].time_s) for s in SPLITS]
+time_boundaries = [tracks[s - 1].time_s for s in SPLITS]
 print(time_boundaries)
 # print("\n".join([str(t.offset_time_s(-10)) for t in tracks[0:2]]))
